@@ -5,3 +5,4 @@ WORKDIR /go/src/github.com/crosbymichael/dockersql
 
 RUN go get -d && go build .
 
+ENTRYPOINT ["./dockersql"]
