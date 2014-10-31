@@ -105,8 +105,8 @@ func mainAction(context *cli.Context) {
 
 		rows, err := db.Query(s.Text())
 		if err != nil {
-			db.Close()
-			logger.Fatal(err)
+			logger.Warn(err)
+			continue
 		}
 		if err := DisplayResults(rows); err != nil {
 			db.Close()
