@@ -104,7 +104,11 @@ func mainAction(context *cli.Context) {
 			break
 		}
 
-		rows, err := db.Query(s.Text())
+		query := s.Text()
+		if query == "" {
+			continue
+		}
+		rows, err := db.Query(query)
 		if err != nil {
 			logger.Warn(err)
 			continue
