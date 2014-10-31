@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/samalba/dockerclient"
 )
@@ -12,7 +13,7 @@ func loadContainers(client *dockerclient.DockerClient, db *sql.DB) error {
 		return err
 	}
 	if _, err := db.Exec(
-		"CREATE TABLE containers (id, image, name, state, command, cpu, memory, cpuset, ip)"); err != nil {
+		"CREATE TABLE containers (id, image, name, state, command, cpu, memory, cpuset, ip, created)"); err != nil {
 		return err
 	}
 	for _, c := range containers {
@@ -21,12 +22,13 @@ func loadContainers(client *dockerclient.DockerClient, db *sql.DB) error {
 			return err
 		}
 
+		created := time.Unix(int64(c.Created), 0)
 		if _, err := db.Exec(
 			`INSERT INTO containers 
-            (id, image, name, state, command, cpu, memory, cpuset, ip) 
-            VALUES (?, ?, ?, ? ,?, ?, ?, ?, ?)`,
+            (id, image, name, state, command, cpu, memory, cpuset, ip, created) 
+            VALUES (?, ?, ?, ? ,?, ?, ?, ?, ?, ?)`,
 			c.Id, c.Image, info.Name, getState(info), c.Command, info.Config.CpuShares, info.Config.Memory,
-			info.Config.Cpuset, info.NetworkSettings.IpAddress); err != nil {
+			info.Config.Cpuset, info.NetworkSettings.IpAddress, created); err != nil {
 			return err
 		}
 	}
