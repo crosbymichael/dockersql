@@ -21,6 +21,7 @@ var (
 	logger      = logrus.New()
 	globalFlags = []cli.Flag{
 		cli.BoolFlag{Name: "debug", Usage: "enabled debug output for the logs"},
+		cli.StringFlag{Name: "docker", Value: "unix:///var/run/docker.sock", Usage: "url to your docker daemon endpoint"},
 	}
 	tables = []string{
 		"CREATE TABLE containers (id, image, name, status, command)",
@@ -77,7 +78,7 @@ func loadImages(client *dockerclient.DockerClient, db *sql.DB) error {
 }
 
 func mainAction(context *cli.Context) {
-	client, err := dockerclient.NewDockerClient("http://docker:2375", nil)
+	client, err := dockerclient.NewDockerClient(context.GlobalString("docker"), nil)
 	if err != nil {
 		logger.Fatal(err)
 	}

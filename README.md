@@ -2,6 +2,12 @@
 
 Query your docker with SQL.  Why?  Why not.
 
+
+#### Connect to your docker
+```bash
+dockersql --docker http://docker:2375
+```
+
 #### Get the count of all images
 ```bash
 dockersql
@@ -10,7 +16,6 @@ count(*)
 25
 >
 ```
-
 
 #### Select all images larger than 1G
 ```bash
@@ -31,6 +36,5 @@ id                                                                 name         
 f733305c31fd3e7ea7269a96ff1747f977ee5a19decf8b4778a481a010434a0c   /local-registry   registry:latest
 >
 ```
-
 
 ### License - MIT
