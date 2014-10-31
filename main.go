@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"database/sql"
+	"fmt"
 	"os"
 
 	"github.com/Sirupsen/logrus"
@@ -94,15 +96,28 @@ func mainAction(context *cli.Context) {
 		logger.Fatal(err)
 	}
 
-	rows, err := db.Query(context.Args().First())
-	if err != nil {
-		db.Close()
-		logger.Fatal(err)
+	s := bufio.NewScanner(os.Stdin)
+	for {
+		prompt()
+		if !s.Scan() {
+			break
+		}
+
+		rows, err := db.Query(s.Text())
+		if err != nil {
+			db.Close()
+			logger.Fatal(err)
+		}
+		if err := DisplayResults(rows); err != nil {
+			db.Close()
+			logger.Fatal(err)
+		}
 	}
-	if err := DisplayResults(rows); err != nil {
-		db.Close()
-		logger.Fatal(err)
-	}
+	db.Close()
+}
+
+func prompt() {
+	fmt.Fprintf(os.Stdout, "> ")
 }
 
 func main() {
