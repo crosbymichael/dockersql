@@ -64,7 +64,9 @@ func mainAction(context *cli.Context) {
 		if query == "" {
 			continue
 		}
-
+		if err := ln.AddHistory(query); err != nil {
+			logger.Error(err)
+		}
 		rows, err := db.Query(query)
 		if err != nil {
 			logger.Warn(err)
