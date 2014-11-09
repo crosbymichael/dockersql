@@ -1,11 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"database/sql"
-	"fmt"
 	"os"
 
+	ln "github.com/GeertJohan/go.linenoise"
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 	_ "github.com/mattn/go-sqlite3"
@@ -27,37 +26,45 @@ func preload(context *cli.Context) error {
 	return nil
 }
 
-func mainAction(context *cli.Context) {
+func loadDatabase(context *cli.Context) (*sql.DB, error) {
 	client, err := dockerclient.NewDockerClient(context.GlobalString("docker"), nil)
 	if err != nil {
 		logger.Fatal(err)
 	}
-
 	db, err := sql.Open("sqlite3", ":memory:")
 	if err != nil {
-		logger.Fatal(err)
+		return nil, err
 	}
-
 	if err := loadContainers(client, db); err != nil {
 		db.Close()
-		logger.Fatal(err)
+		return nil, err
 	}
 	if err := loadImages(client, db); err != nil {
 		db.Close()
+		return nil, err
+	}
+	return db, nil
+}
+
+func mainAction(context *cli.Context) {
+	db, err := loadDatabase(context)
+	if err != nil {
 		logger.Fatal(err)
 	}
-
-	s := bufio.NewScanner(os.Stdin)
+	defer db.Close()
+	ln.SetMultiline(true)
 	for {
-		prompt()
-		if !s.Scan() {
-			break
+		query, err := ln.Line("> ")
+		if err != nil {
+			if err != ln.KillSignalError {
+				logger.Error(err)
+			}
+			return
 		}
-
-		query := s.Text()
 		if query == "" {
 			continue
 		}
+
 		rows, err := db.Query(query)
 		if err != nil {
 			logger.Warn(err)
@@ -68,11 +75,10 @@ func mainAction(context *cli.Context) {
 			logger.Fatal(err)
 		}
 	}
-	db.Close()
 }
 
 func prompt() {
-	fmt.Fprintf(os.Stdout, "> ")
+	ln.Line("> ")
 }
 
 func main() {
