@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"os"
+	"strings"
 
 	ln "github.com/GeertJohan/go.linenoise"
 	"github.com/Sirupsen/logrus"
@@ -46,6 +47,38 @@ func loadDatabase(context *cli.Context) (*sql.DB, error) {
 	return db, nil
 }
 
+var completions = []string{
+	"select",
+	"where",
+	"from",
+	"containers",
+	"images",
+}
+
+// only complete on the last full word of the completion
+func completion(input string) []string {
+	var (
+		out   []string
+		parts = strings.Split(input, " ")
+		lower = strings.ToLower(parts[len(parts)-1])
+		l     = len(lower)
+	)
+	for _, c := range completions {
+		if len(c) < l {
+			continue
+		}
+		if strings.HasPrefix(c, lower) {
+			if len(parts) == 1 {
+				out = append(out, c)
+			} else {
+				parts[len(parts)-1] = c
+				out = append(out, strings.Join(parts, " "))
+			}
+		}
+	}
+	return out
+}
+
 func mainAction(context *cli.Context) {
 	db, err := loadDatabase(context)
 	if err != nil {
@@ -53,6 +86,7 @@ func mainAction(context *cli.Context) {
 	}
 	defer db.Close()
 	ln.SetMultiline(true)
+	ln.SetCompletionHandler(completion)
 	for {
 		query, err := ln.Line("> ")
 		if err != nil {
