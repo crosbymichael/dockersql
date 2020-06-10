@@ -1,14 +1,13 @@
-package main
+package dockersql
 
 import (
 	"database/sql"
-	"time"
-
 	"github.com/samalba/dockerclient"
+	"time"
 )
 
-func loadImages(client *dockerclient.DockerClient, db *sql.DB) error {
-	images, err := client.ListImages()
+func LoadImages(client *dockerclient.DockerClient, db *sql.DB) error {
+	images, err := client.ListImages(true)
 	if err != nil {
 		return err
 	}
@@ -18,9 +17,13 @@ func loadImages(client *dockerclient.DockerClient, db *sql.DB) error {
 	}
 	for _, i := range images {
 		created := time.Unix(i.Created, 0)
+		var tag = ""
+		if i.RepoTags != nil {
+			tag = i.RepoTags[0]
+		}
 		if _, err := db.Exec(
 			"INSERT INTO images (id, parent_id, size, virtual_size, tag, created) VALUES (?, ?, ?, ?, ?, ?)",
-			i.Id, i.ParentId, i.Size, i.VirtualSize, i.RepoTags[0], created); err != nil {
+			i.Id, i.ParentId, i.Size, i.VirtualSize, tag, created); err != nil {
 			return err
 		}
 	}

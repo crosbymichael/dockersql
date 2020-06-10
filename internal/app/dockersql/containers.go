@@ -1,4 +1,4 @@
-package main
+package dockersql
 
 import (
 	"database/sql"
@@ -7,8 +7,8 @@ import (
 	"github.com/samalba/dockerclient"
 )
 
-func loadContainers(client *dockerclient.DockerClient, db *sql.DB) error {
-	containers, err := client.ListContainers(true)
+func LoadContainers(client *dockerclient.DockerClient, db *sql.DB) error {
+	containers, err := client.ListContainers(true, true, "")
 	if err != nil {
 		return err
 	}
@@ -28,7 +28,7 @@ func loadContainers(client *dockerclient.DockerClient, db *sql.DB) error {
             (id, image, name, state, command, cpu, memory, cpuset, ip, created) 
             VALUES (?, ?, ?, ? ,?, ?, ?, ?, ?, ?)`,
 			c.Id, c.Image, info.Name, getState(info), c.Command, info.Config.CpuShares, info.Config.Memory,
-			info.Config.Cpuset, info.NetworkSettings.IpAddress, created); err != nil {
+			info.Config.Cpuset, info.NetworkSettings.IPAddress, created); err != nil {
 			return err
 		}
 	}

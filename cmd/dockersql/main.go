@@ -2,14 +2,14 @@ package main
 
 import (
 	"database/sql"
-	"os"
-	"strings"
-
+	"dockersql/internal/app/dockersql"
 	ln "github.com/GeertJohan/go.linenoise"
-	"github.com/Sirupsen/logrus"
-	"github.com/codegangsta/cli"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/samalba/dockerclient"
+	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
+	"os"
+	"strings"
 )
 
 var (
@@ -36,11 +36,11 @@ func loadDatabase(context *cli.Context) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := loadContainers(client, db); err != nil {
+	if err := dockersql.LoadContainers(client, db); err != nil {
 		db.Close()
 		return nil, err
 	}
-	if err := loadImages(client, db); err != nil {
+	if err := dockersql.LoadImages(client, db); err != nil {
 		db.Close()
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func mainAction(context *cli.Context) {
 			logger.Warn(err)
 			continue
 		}
-		if err := DisplayResults(rows); err != nil {
+		if err := dockersql.DisplayResults(rows); err != nil {
 			db.Close()
 			logger.Fatal(err)
 		}

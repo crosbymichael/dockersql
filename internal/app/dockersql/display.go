@@ -1,4 +1,4 @@
-package main
+package dockersql
 
 import (
 	"database/sql"

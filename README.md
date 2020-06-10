@@ -3,6 +3,21 @@
 Query your docker with SQL.  Why?  Why not.
 
 
+### Build From Source Code
+
+You can build from the source code as below:
+
+```bash
+git clone https://github.com/crosbymichael/dockersql.git
+
+cd dockersql/cmd/dockersql
+
+sudo go build -o /usr/local/bin/dockersql .
+
+dockersql
+```
+
+
 #### Connect to your docker
 ```bash
 dockersql --docker http://docker:2375
